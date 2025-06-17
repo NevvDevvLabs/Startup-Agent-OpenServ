@@ -3,7 +3,7 @@
 Telegram bot for managing, tracking and rewarding communities of startups and ecosystems.
 
 <p align="center">
-  <img src="/images/logo.png" alt="logo" width="400" height="auto">
+  <img src="/images/logo.png" alt="logo" width="300" height="300">
 </p>
 
 ## 🎯 What Does It Do?
