@@ -191,7 +191,7 @@ class SimpleTelegramBot extends Agent {
         max_results: 100,
         "tweet.fields":
           "created_at,author_id,public_metrics,context_annotations",
-        "user.fields": "username,name,verified",
+        "user.fields": "username,name,verified,public_metrics",
         expansions: "author_id",
       };
 
@@ -331,7 +331,7 @@ class SimpleTelegramBot extends Agent {
         max_results: 100,
         "tweet.fields":
           "created_at,author_id,public_metrics,context_annotations",
-        "user.fields": "username,name,verified",
+        "user.fields": "username,name,verified,public_metrics",
         expansions: "author_id",
       };
 
@@ -375,39 +375,101 @@ class SimpleTelegramBot extends Agent {
   };
 
   public createMentionsLeaderboard(allTweets: any[], allUsers: any[]) {
-    const mentionCounts = {};
+    const userScores = {};
+    const currentWeek = this.getWeekNumber(new Date());
+    const lastWeek = currentWeek - 1;
+
+    const tweetsByUserAndWeek = {};
 
     allTweets.forEach((tweet) => {
-      const authorId = tweet.author_id;
-      const user = allUsers.find((u) => u.id === authorId);
+      const user = allUsers.find((u) => u.id === tweet.author_id);
+      if (!user) return;
 
-      if (user) {
-        const username = user.username;
-        const displayName = user.name;
-        const userKey = `@${username}`;
+      const tweetDate = new Date(tweet.created_at);
+      const tweetWeek = this.getWeekNumber(tweetDate);
+      const userKey = `@${user.username}`;
 
-        if (!mentionCounts[userKey]) {
-          mentionCounts[userKey] = {
-            count: 0,
-            username: username,
-            displayName: displayName,
-            verified: user.verified || false,
-          };
-        }
-        mentionCounts[userKey].count++;
+      if (!tweetsByUserAndWeek[userKey]) {
+        tweetsByUserAndWeek[userKey] = {};
       }
+      if (!tweetsByUserAndWeek[userKey][tweetWeek]) {
+        tweetsByUserAndWeek[userKey][tweetWeek] = [];
+      }
+
+      tweetsByUserAndWeek[userKey][tweetWeek].push({
+        tweet,
+        user,
+        tweetDate,
+      });
     });
 
-    const leaderboard = Object.entries(mentionCounts)
-      .map(([userKey, data]: [string, any]) => ({
-        username: userKey,
-        displayName: data.displayName,
-        count: data.count,
-        verified: data.verified,
-      }))
-      .sort((a, b) => b.count - a.count);
+    Object.entries(tweetsByUserAndWeek).forEach(
+      ([userKey, weekData]: [string, any]) => {
+        const user = Object.values(weekData)[0][0].user;
+        let totalScore = 0;
+        let totalTweets = 0;
+
+        const hasLastWeekTweets =
+          weekData[lastWeek] && weekData[lastWeek].length > 0;
+        const consistencyMultiplier = hasLastWeekTweets ? 1.25 : 1;
+
+        Object.entries(weekData).forEach(([week, tweets]: [string, any]) => {
+          const weekNum = parseInt(week);
+          tweets.sort(
+            (a, b) =>
+              new Date(b.tweetDate).getTime() - new Date(a.tweetDate).getTime()
+          );
+
+          tweets.forEach((tweetData, index) => {
+            const { tweet, user } = tweetData;
+
+            const followers = user.public_metrics?.followers_count || 0;
+            const likes = tweet.public_metrics?.like_count || 0;
+            const retweets = tweet.public_metrics?.retweet_count || 0;
+
+            const impactScore = followers * 0.001 + likes + retweets * 2;
+
+            let freshnessMultiplier = 1;
+            if (index === 0) freshnessMultiplier = 3;
+            else if (index === 1) freshnessMultiplier = 2;
+
+            let decayFactor = 0.25;
+            if (weekNum === currentWeek) {
+              if (index === 0) decayFactor = 1;
+              else if (index === 1) decayFactor = 0.5;
+            }
+
+            const finalScore =
+              impactScore *
+              freshnessMultiplier *
+              consistencyMultiplier *
+              decayFactor;
+            totalScore += finalScore;
+            totalTweets++;
+          });
+        });
+
+        userScores[userKey] = {
+          username: userKey,
+          displayName: user.name,
+          score: Math.round(totalScore * 100) / 100,
+          tweetCount: totalTweets,
+          verified: user.verified || false,
+        };
+      }
+    );
+
+    const leaderboard = Object.values(userScores).sort(
+      (a: any, b: any) => b.score - a.score
+    );
 
     return leaderboard;
+  }
+
+  private getWeekNumber(date: Date): number {
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date.getTime() - startOfYear.getTime()) / 86400000;
+    return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
   }
 
   public findUserStats(
@@ -434,7 +496,8 @@ class SimpleTelegramBot extends Agent {
     const rank = userIndex + 1;
     const verifiedBadge = user.verified ? " ✓" : "";
 
-    const percentage = ((user.count / totalTweets) * 100).toFixed(1);
+    const totalScore = leaderboard.reduce((sum, u) => sum + u.score, 0);
+    const percentage = ((user.score / totalScore) * 100).toFixed(1);
     const isTopTen = rank <= 10;
     const isTopHalf = rank <= Math.ceil(leaderboard.length / 2);
 
@@ -449,8 +512,9 @@ class SimpleTelegramBot extends Agent {
       `👤 USER STATS FOR ${user.username}${verifiedBadge}`,
       "═".repeat(40),
       `📍 Rank: #${rank} out of ${leaderboard.length} users`,
-      `💬 Mentions: ${user.count}`,
-      `📊 Percentage of total: ${percentage}%`,
+      `🏆 Score: ${user.score}`,
+      `💬 Tweets: ${user.tweetCount}`,
+      `📊 Score percentage: ${percentage}%`,
       `🎯 Performance: ${performance}`,
       "",
       `📝 Display Name: ${user.displayName}`,
@@ -480,17 +544,17 @@ class SimpleTelegramBot extends Agent {
     const cacheAge = Math.floor((Date.now() - lastUpdated) / (1000 * 60));
 
     const top10Text = [
-      "🏆 TOP 10 MOST ACTIVE MENTIONERS 🏆",
+      "🏆 TOP 10 HIGHEST SCORING USERS 🏆",
       "═".repeat(45),
       ...top10.map((user, index) => {
         const rank = `#${(index + 1).toString().padStart(2, "0")}`;
         const verifiedBadge = user.verified ? " ✓" : "";
-        const count = user.count.toString().padStart(3, " ");
-        return `${rank} | ${count} mentions | ${user.username}${verifiedBadge}`;
+        const score = user.score.toString().padStart(8, " ");
+        return `${rank} | ${score} pts | ${user.username}${verifiedBadge}`;
       }),
       "",
       `📊 Total unique users: ${leaderboard.length}`,
-      `📈 Total mentions analyzed: ${totalTweets}`,
+      `📈 Total tweets analyzed: ${totalTweets}`,
       `⏰ Last updated: ${cacheAge} minutes ago`,
     ].join("\n");
 
@@ -632,7 +696,7 @@ class SimpleTelegramBot extends Agent {
 Commands:
 • /start - Start the bot
 • /ask [question] - Ask a question
-• /leaderboard - Show top 10 mentioners (cached, instant)
+• /leaderboard - Show top 10 scoring users (cached, instant)
 • /leaderboard @username - Show personal stats
 • /help - Show this help message
 
@@ -645,6 +709,8 @@ Examples:
 • Instant responses from 6-hour cache
 • Auto-updates every 30 minutes (new tweets only)
 • Full refresh every 24 hours
+
+🏆 Scoring uses impact, freshness, consistency & decay factors
       `;
       await this.bot.sendMessage(chatId, helpText);
     });

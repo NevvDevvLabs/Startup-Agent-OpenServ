@@ -10,7 +10,7 @@ Telegram bot for managing, tracking and rewarding communities of startups and ec
 
 ### Frontend
 
--
+- UI displaying in aesthetically pleasing way the leaderboard of community engagement, scoring rules and information about the project
 
 ### Tg bot commands
 
@@ -32,6 +32,17 @@ Telegram bot for managing, tracking and rewarding communities of startups and ec
 - Auto-refresh every 2 minutes in background
 - Smart cache validation - only fetches when needed
 - Prevents duplicate API calls during concurrent requests
+
+### Scoring Logic
+
+Final Score = ImpactScore × FreshnessMultiplier × ConsistencyMultiplier × DecayFactor
+
+| Component                 | Description                                                            |
+| ------------------------- | ---------------------------------------------------------------------- |
+| **ImpactScore**           | `(followers × 0.001) + (likes) + (retweets × 2)`                       |
+| **FreshnessMultiplier**   | `3 → first tweet`, `2 → second`, `1 → all others`                      |
+| **ConsistencyMultiplier** | `1.25 → if user posted last week`, otherwise `1`                       |
+| **DecayFactor**           | `1 → first tweet this week`, `0.5 → second`, `0.25 → third and beyond` |
 
 ## 🚀 Installation
 
