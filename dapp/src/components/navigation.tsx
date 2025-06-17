@@ -35,7 +35,7 @@ export function Navigation() {
                 <Twitter className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                EngageTracker
+                OpenServ Community Bot
               </span>
             </div>
           </div>
