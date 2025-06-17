@@ -1,27 +1,54 @@
-# Simple Telegram OpenServ Bot
+# OpenServ Community Bot
 
-The simplest Telegram bot - OpenServ agent integration.
+Telegram bot for managing, tracking and rewarding communities of startups and ecosystems.
+
+<p align="center">
+  <img src="/images/logo.png" alt="Dapp" width="1000" height="auto">
+</p>
 
 ## 🎯 What Does It Do?
 
-1. Receives `/ask [question]` command from Telegram
-2. Creates a task for the specified agent in OpenServ
-3. Waits for task completion
-4. Sends the response to the same chat
+### Frontend
+
+-
+
+### Tg bot commands
+
+1. `/leaderboard` - Get top 10 users from the leaderboard and leaderboard stats
+2. `/leaderboard @handle` - Get leaderboard statistics for particular @handle from the leaderboard
+3. `/stats` - Get Statistics about community activity **ToDo**
+4. `/help` - Get helpful information about the project and instructions how to use the bot
+
+## How It Works
+
+### Smart Caching System:
+
+- In-memory cache with 30-minute TTL (configurable)
+- File persistence (leaderboard_cache.json)
+- Instant responses to user commands
+
+### Intelligent Updates:
+
+- Auto-refresh every 2 minutes in background
+- Smart cache validation - only fetches when needed
+- Prevents duplicate API calls during concurrent requests
 
 ## 🚀 Installation
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Set Up Environment File
+
 ```bash
 cp .env.example .env
 ```
 
 Edit the `.env` file:
+
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 OPENSERV_API_KEY=your_openserv_api_key_here
@@ -30,6 +57,7 @@ AGENT_ID=your_agent_id_here
 ```
 
 ### 3. Run
+
 ```bash
 # Development
 npm run dev
@@ -42,11 +70,13 @@ npm start
 ## 📱 Usage
 
 ### Commands
+
 - `/start` - Start the bot
 - `/ask [question]` - Ask a question
 - `/help` - Help
 
 ### Examples
+
 ```
 /ask What is OpenServ?
 /ask What is the BTC price?
@@ -56,14 +86,16 @@ npm start
 ## ⚙️ Requirements
 
 ### Environment Variables
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token | ✅ |
-| `OPENSERV_API_KEY` | OpenServ API key | ✅ |
-| `WORKSPACE_ID` | OpenServ workspace ID | ✅ |
-| `AGENT_ID` | Agent ID to use | ✅ |
+
+| Variable             | Description           | Required |
+| -------------------- | --------------------- | -------- |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token    | ✅       |
+| `OPENSERV_API_KEY`   | OpenServ API key      | ✅       |
+| `WORKSPACE_ID`       | OpenServ workspace ID | ✅       |
+| `AGENT_ID`           | Agent ID to use       | ✅       |
 
 ### OpenServ Agents
+
 You can use any of the available agents on the platform:
 
 - **Research Assistant (ID: 2)** - Internet research
@@ -75,6 +107,7 @@ You can use any of the available agents on the platform:
 - **Audio transcriber (ID: 155)** - Audio transcription
 
 #### Finding Other Agent IDs
+
 To discover additional agents and their IDs:
 
 1. **Marketplace Agents**: Visit [https://platform.openserv.ai/agents](https://platform.openserv.ai/agents) and check the network request `https://api.openserv.ai/marketplace/agents?page=...&pageSize=...` that loads when the page opens.
@@ -86,25 +119,25 @@ To discover additional agents and their IDs:
 ```typescript
 // Add this temporary capability to see available agents
 this.addCapability({
-  name: 'debugAgents',
-  description: 'Debug: log all available agents',
+  name: "debugAgents",
+  description: "Debug: log all available agents",
   schema: z.object({}),
   async run({ args, action }) {
     if (!action?.workspace?.agents) {
-      console.log('❌ No workspace agents available')
-      return 'No workspace context available'
+      console.log("❌ No workspace agents available");
+      return "No workspace context available";
     }
-    
-    console.log('🔍 Available Agents in Workspace:')
+
+    console.log("🔍 Available Agents in Workspace:");
     action.workspace.agents.forEach((agent, index) => {
-      console.log(`${index + 1}. Name: "${agent.name}" | ID: ${agent.id}`)
-      console.log(`   Capabilities: ${agent.capabilities_description}`)
-      console.log('---')
-    })
-    
-    return `Found ${action.workspace.agents.length} agents. Check console for details.`
-  }
-})
+      console.log(`${index + 1}. Name: "${agent.name}" | ID: ${agent.id}`);
+      console.log(`   Capabilities: ${agent.capabilities_description}`);
+      console.log("---");
+    });
+
+    return `Found ${action.workspace.agents.length} agents. Check console for details.`;
+  },
+});
 ```
 
 Then use `/ask debug agents` to see all available agents in your console output.
@@ -114,13 +147,14 @@ Then use `/ask debug agents` to see all available agents in your console output.
 ```typescript
 class SimpleTelegramBot {
   // 1. Receives Telegram message
-  // 2. Creates task in OpenServ  
+  // 2. Creates task in OpenServ
   // 3. Waits for task completion
   // 4. Sends result to Telegram
 }
 ```
 
 ### Main Functions
+
 - `setupHandlers()` - Telegram command handlers
 - `waitForTaskCompletion()` - Wait for task completion
 - `start()` - Start the bot
@@ -128,33 +162,40 @@ class SimpleTelegramBot {
 ## 🐛 Troubleshooting
 
 ### Bot not responding
+
 - Check environment variables
 - Is the OpenServ API key valid?
 - Is the Agent ID correct?
 
 ### Task timeout
+
 - Agent might be too busy
 - Try a different agent
 - Is the Workspace ID correct?
 
 ### Telegram connection issue
+
 - Check bot token
 - Is there an internet connection?
 
 ### Finding Available Agents
+
 If you don't know which agents are available in your workspace, add the debug capability above and use:
+
 ```
 /ask debug agents
 ```
+
 This will show all available agents with their IDs and capabilities in your console output.
 
 ### Example Console Output:
+
 ```
 🔍 Available Agents in Workspace:
 1. Name: "Research Assistant" | ID: 2
    Capabilities: - Search on the internet about a certain topic...
 ---
-2. Name: "General Assistant" | ID: 3  
+2. Name: "General Assistant" | ID: 3
    Capabilities: - Do data analysis, Create PDF reports...
 ---
 3. Name: "Coder" | ID: 39
@@ -163,6 +204,7 @@ This will show all available agents with their IDs and capabilities in your cons
 ```
 
 ## 📋 Example .env
+
 ```env
 TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHijklMNOpqrsTUVwxyz
 OPENSERV_API_KEY=openserv_key_123abc...
@@ -181,13 +223,17 @@ AGENT_ID=2
 ## 💡 Customization
 
 ### Using Different Agent
+
 Change `AGENT_ID` in `.env` file:
+
 ```env
 AGENT_ID=140  # For Perplexity Research
 ```
 
 ### Changing Timeout Duration
+
 Change `maxWaitTime` in `src/index.ts` file:
+
 ```typescript
-const maxWaitTime = 180000 // 3 minutes
+const maxWaitTime = 180000; // 3 minutes
 ```
