@@ -3,7 +3,7 @@
 Telegram bot for managing, tracking and rewarding communities of startups and ecosystems.
 
 <p align="center">
-  <img src="/images/logo.png" alt="Dapp" width="1000" height="auto">
+  <img src="/images/logo.png" alt="logo" width="400" height="auto">
 </p>
 
 ## 🎯 What Does It Do?
@@ -16,8 +16,8 @@ Telegram bot for managing, tracking and rewarding communities of startups and ec
 
 1. `/leaderboard` - Get top 10 users from the leaderboard and leaderboard stats
 2. `/leaderboard @handle` - Get leaderboard statistics for particular @handle from the leaderboard
-3. `/stats` - Get Statistics about community activity **ToDo**
-4. `/help` - Get helpful information about the project and instructions how to use the bot
+3. `/help` - Get helpful information about the project and instructions how to use the bot
+4. `/ask <question>` - Ask information about the project
 
 ## How It Works
 
