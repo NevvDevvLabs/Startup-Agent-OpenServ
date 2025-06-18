@@ -12,7 +12,21 @@ Telegram bot for managing, tracking and rewarding communities of startups and ec
 
 - UI displaying in aesthetically pleasing way the leaderboard of community engagement, scoring rules and information about the project
 
-### Tg bot commands
+<p align="center">
+  <img src="/images/home.png" alt="home" width="600" height="auto">
+</p>
+
+<p align="center">
+  <img src="/images/about.png" alt="about" width="600" height="auto">
+</p>
+
+### Tg bot
+
+- Interactive telegram bot that tracks twitter engagement
+- Automated scoring for individual users and the whole leaderboard
+- Posts automatically updated leaderboard every 24H / Weekly((can be customized later)
+
+**Available commands:**
 
 1. `/leaderboard` - Get top 10 users from the leaderboard and leaderboard stats
 2. `/leaderboard @handle` - Get leaderboard statistics for particular @handle from the leaderboard
