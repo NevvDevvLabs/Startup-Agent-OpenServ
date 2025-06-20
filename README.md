@@ -6,7 +6,10 @@ Telegram bot for managing, tracking and rewarding communities of startups and ec
   <img src="/images/logo.png" alt="logo" width="300" height="300">
 </p>
 
-## 🎯 What Does It Do?
+## Deployment
+
+- Frontend Web App - [Link](https://openserv-leaderboard.vercel.app/)
+- Telegram Bot - [Open in telegram](https://t.me/OpenServ_Leaderboard_bot)
 
 ### Frontend
 
