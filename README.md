@@ -1,5 +1,9 @@
 # OpenServ Community Bot
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/typescript-%5E4.0.0-blue.svg)](https://www.typescriptlang.org/)
+
 Telegram bot for managing, tracking and rewarding communities of startups and ecosystems.
 
 <p align="center">
@@ -8,8 +12,27 @@ Telegram bot for managing, tracking and rewarding communities of startups and ec
 
 ## Deployment
 
-- Frontend Web App - [Link](https://openserv-leaderboard.vercel.app/)
-- Telegram Bot - [Open in telegram](https://t.me/OpenServ_Leaderboard_bot)
+- **Web Dashboard**: [https://openserv-leaderboard.vercel.app/](https://openserv-leaderboard.vercel.app/)
+- **Telegram Bot**: [@OpenServ_Leaderboard_bot](https://t.me/OpenServ_Leaderboard_bot)
+
+## Architecture
+
+The bot operates on a simple architecture:
+
+1. **Telegram Interface**: Handles user interactions
+2. **OpenServ Integration**: Manages task processing
+3. **Caching System**: In-memory and persistent cache for leaderboard data
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   Telegram Bot  │───▶│  OpenServ API   │
+└─────────────────┘    └─────────────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐
+│   Cache System  │    │ Twitter Tracking│
+└─────────────────┘    └─────────────────┘
+```
 
 ### Frontend
 
